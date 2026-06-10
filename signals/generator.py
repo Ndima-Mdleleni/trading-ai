@@ -1,9 +1,5 @@
-# signals/generator.py
-# Generates buy/sell signals from technical indicators
-# Single responsibility: take indicator data, return signal column
-
 import pandas as pd
-import numpy as np
+import numpy as np 
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,43 +7,55 @@ logger = logging.getLogger(__name__)
 
 def generate_signals(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Generate trading signals based on indicator combinations.
+    Generate trading signals using MACD + Bollinger Band confluence.
 
-    Signal logic:
-    - BUY  (1)  when fast MA crosses above slow MA AND RSI < 70
-    - SELL (-1) when fast MA crosses below slow MA AND RSI > 30
-    - HOLD (0)  otherwise
+    BUY  (1)  when:
+        - MACD line crosses above signal line (momentum turning bullish)
+        - price is at or below BB midline (good entry, not overextended)
+        - RSI is not overbought (below 70)
 
-    Returns dataframe with added signal columns.
+    SELL (-1) when:
+        - MACD line crosses below signal line (momentum turning bearish)
+        - price is at or above BB midline (good exit, not oversold)
+        - RSI is not oversold (above 30)
     """
     df = df.copy()
 
-    # MA crossover — fast crosses above slow
-    df["ma_cross_up"]   = (
-        (df["ma_fast"] > df["ma_slow"]) &
-        (df["ma_fast"].shift(1) <= df["ma_slow"].shift(1))
+    df["macd_cross_up"] = (
+        (df["macd"] > df["macd_signal"]) &
+        (df["macd"].shift(1) <= df["macd_signal"].shift(1))
     )
 
-    # MA crossover — fast crosses below slow
-    df["ma_cross_down"] = (
-        (df["ma_fast"] < df["ma_slow"]) &
-        (df["ma_fast"].shift(1) >= df["ma_slow"].shift(1))
+    df["macd_cross_down"] = (
+        (df["macd"] < df["macd_signal"]) &
+        (df["macd"].shift(1) >= df["macd_signal"].shift(1))
     )
 
-    # raw signal
+    df["bb_position"] = (df["Close"] - df["bb_lower"]) / (df["bb_upper"] - df["bb_lower"])
+
     df["signal"] = 0
-    df.loc[df["ma_cross_up"]   & (df["rsi"] < 70), "signal"] =  1
-    df.loc[df["ma_cross_down"] & (df["rsi"] > 30), "signal"] = -1
 
-    # position — carries signal forward until next crossover
+    df.loc[
+        df["macd_cross_up"] &
+        (df["bb_position"] <= 0.5) &
+        (df["rsi"] < 70),
+        "signal"
+    ] = 1
+
+    df.loc[
+        df["macd_cross_down"] &
+        (df["bb_position"] >= 0.5) &
+        (df["rsi"] > 30),
+        "signal"
+    ] = -1
+
     df["position"] = df["signal"].replace(0, np.nan).ffill().fillna(0)
-
-    buy_signals  = (df["signal"] ==  1).sum()
+    
+    buy_signals = (df["signal"] == 1).sum()
     sell_signals = (df["signal"] == -1).sum()
     logger.info(f"generated {buy_signals} buy signals and {sell_signals} sell signals")
 
     return df
-
 
 if __name__ == "__main__":
     from data.fetcher import fetch_ohlcv
@@ -59,6 +67,6 @@ if __name__ == "__main__":
     df = add_indicators(df)
     df = generate_signals(df)
 
-    signals = df[df["signal"] != 0][["Close", "signal", "rsi", "ma_fast", "ma_slow"]]
+    signals = df[df["signal"] != 0][["Close", "signal", "rsi", "bb_position", "macd_signal"]]
     print(signals)
     print(f"\ntotal signals: {len(signals)}")
