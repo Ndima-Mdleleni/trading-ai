@@ -27,15 +27,21 @@ All parameters are in `config.py` — change ticker, dates, capital,
 position size, commission and indicator periods from one place.
 
 ## What I learned
-This was my first bridge into quant level engineering which is my ultimate goal. 
-The pieces are intricate but grounded in simple mathematics. The hard part is that 
-code can look right, run properly, and print good results — but those results can be 
-misleading when current data leaks into the training process, making numbers look 
-strong in testing but weak in deployment. I'm building my eye for those kinds of 
-issues and learning to identify problems in the process earlier so I spend more time 
-building than debugging. This project is intentionally scalable — the goal is to 
-refine the signals, add live broker integration, and deploy it as a fully automated 
-system.
+Building this trading AI was my first real step into quantitative engineering — 
+and it taught me more about what I don't know than what I do. The pipeline itself 
+is solid: data fetching, processing, indicators, signal generation, backtesting, 
+metrics and reporting all connected and working. But running it humbled me. The 
+first strategy — MA crossover — looked clean in code and returned results, but 
+only 6% over 4 years while the market made 50%. The problem wasn't the code, it 
+was the thinking. Moving averages are lagging — by the time they signal a move 
+the move has already happened. Switching to MACD and Bollinger Bands improved the 
+quality immediately — 100% win rate, better drawdown, higher Sharpe — but now the 
+strategy is too conservative, missing most of the market's moves by sitting in cash. 
+The deeper lesson was about data leakage: code can run perfectly, print good numbers, 
+and still be lying to you because future information is bleeding into past decisions. 
+Learning to see those problems before they cost real money is the actual skill. 
+This is version one. The signals get better, the parameters get optimised, 
+live broker integration comes next — and so does the real test.
 
 ## Next steps
 - Improve signal quality for higher Sharpe ratio
