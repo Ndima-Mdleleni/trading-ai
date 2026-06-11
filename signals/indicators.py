@@ -45,6 +45,10 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df["bb_lower"] = bb.bollinger_lband()
     df["bb_mid"]   = bb.bollinger_mavg()
 
+    df["atr"] = ta.volatility.average_true_range(
+        df["High"], df["Low"], df["Close"], window=14
+    )
+
     # drop rows with NaN from indicator warmup period
     df.dropna(inplace=True)
 

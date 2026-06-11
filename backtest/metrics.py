@@ -43,10 +43,10 @@ def calculate_metrics(df: pd.DataFrame, trades: pd.DataFrame) -> dict:
     # trade level metrics
     if len(trades) >= 2:
         buys  = trades[trades["action"] == "BUY"].reset_index(drop=True)
-        sells = trades[trades["action"] == "SELL"].reset_index(drop=True)
-        n     = min(len(buys), len(sells))
+        exits = trades[trades["action"].isin(["SELL", "TRAIL STOP"])].reset_index(drop=True)
+        n     = min(len(buys), len(exits))
 
-        pnl   = (sells["price"].values[:n] - buys["price"].values[:n]) * buys["shares"].values[:n]
+        pnl   = (exits["price"].values[:n] - buys["price"].values[:n]) * buys["shares"].values[:n]
         wins  = (pnl > 0).sum()
         win_rate     = wins / n if n > 0 else 0
         gross_profit = pnl[pnl > 0].sum()

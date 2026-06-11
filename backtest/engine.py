@@ -13,31 +13,36 @@ logger = logging.getLogger(__name__)
 def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
     """
     Simulate trading on historical data using generated signals.
-    Accounts for position sizing, commission and slippage.
+    Accounts for position sizing, commission, slippage and trailing ATR stop.
     Returns dataframe with portfolio value tracked over time.
     """
     df    = df.copy()
     cfg   = config.backtest
 
-    capital      = cfg.initial_capital
-    position     = 0.0      # current shares held
-    cash         = capital
-    portfolio_val= capital
+    capital       = cfg.initial_capital
+    position      = 0.0
+    cash          = capital
+    portfolio_val = capital
+    entry_price   = 0.0
+    trailing_stop = 0.0
 
     portfolio_values = []
     trade_log        = []
 
     for date, row in df.iterrows():
-        price     = row["Close"]
-        signal    = row["signal"]
-        cost      = price * (1 + cfg.commission + cfg.slippage)
-        proceeds  = price * (1 - cfg.commission - cfg.slippage)
+        price    = row["Close"]
+        signal   = row["signal"]
+        atr      = row["atr"]
+        cost     = price * (1 + cfg.commission + cfg.slippage)
+        proceeds = price * (1 - cfg.commission - cfg.slippage)
 
         # BUY signal — enter long position
         if signal == 1 and position == 0:
             shares_to_buy  = (cash * cfg.position_size) / cost
             cash          -= shares_to_buy * cost
             position      += shares_to_buy
+            entry_price    = price
+            trailing_stop  = price - (3 * atr)
             trade_log.append({
                 "date":   date,
                 "action": "BUY",
@@ -47,9 +52,29 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
             })
             logger.debug(f"BUY  {shares_to_buy:.2f} shares at {price:.2f}")
 
+        # TRAILING STOP — update and check
+        elif position > 0 and entry_price > 0:
+            new_stop = price - (3 * atr)
+            if new_stop > trailing_stop:
+                trailing_stop = new_stop
+
+            if price < trailing_stop:
+                cash += position * proceeds
+                trade_log.append({
+                    "date":   date,
+                    "action": "TRAIL STOP",
+                    "price":  price,
+                    "shares": position,
+                    "cash":   cash
+                })
+                logger.debug(f"TRAIL STOP {position:.2f} shares at {price:.2f}")
+                position      = 0.0
+                entry_price   = 0.0
+                trailing_stop = 0.0
+
         # SELL signal — exit position
         elif signal == -1 and position > 0:
-            cash      += position * proceeds
+            cash += position * proceeds
             trade_log.append({
                 "date":   date,
                 "action": "SELL",
@@ -58,7 +83,9 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
                 "cash":   cash
             })
             logger.debug(f"SELL {position:.2f} shares at {price:.2f}")
-            position   = 0.0
+            position      = 0.0
+            entry_price   = 0.0
+            trailing_stop = 0.0
 
         # track portfolio value
         portfolio_val = cash + (position * price)
@@ -82,11 +109,11 @@ if __name__ == "__main__":
     from signals.indicators import add_indicators
     from signals.generator import generate_signals
 
-    df             = fetch_ohlcv()
-    df             = process(df)
-    df             = add_indicators(df)
-    df             = generate_signals(df)
-    df, trades     = run_backtest(df)
+    df         = fetch_ohlcv()
+    df         = process(df)
+    df         = add_indicators(df)
+    df         = generate_signals(df)
+    df, trades = run_backtest(df)
 
     print("\n--- trades ---")
     print(trades.to_string(index=False))
