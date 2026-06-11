@@ -31,23 +31,35 @@ def generate_signals(df: pd.DataFrame) -> pd.DataFrame:
         (df["macd"].shift(1) >= df["macd_signal"].shift(1))
     )
 
+
     df["bb_position"] = (df["Close"] - df["bb_lower"]) / (df["bb_upper"] - df["bb_lower"])
+
+    df["bb_bounce"] = (
+        (df["bb_position"] > 0.1) &
+        (df["bb_position"].shift(1) <= 0.1)
+    )
 
     df["signal"] = 0
 
     df.loc[
         df["macd_cross_up"] &
-        (df["bb_position"] <= 0.5) &
-        (df["rsi"] < 70),
+        (df["bb_position"] <= 0.65) &
+        (df["rsi"] < 75),
         "signal"
     ] = 1
 
     df.loc[
-        df["macd_cross_down"] &
-        (df["bb_position"] >= 0.5) &
-        (df["rsi"] > 30),
+        df["bb_bounce"] &
+        (df["rsi"] < 40),
         "signal"
-    ] = -1
+    ] = 1
+
+    df.loc[
+    df["macd_cross_down"] &
+    (df["bb_position"] >= 0.5) &
+    (df["rsi"] > 30),
+    "signal"
+] = -1
 
     df["position"] = df["signal"].replace(0, np.nan).ffill().fillna(0)
     
