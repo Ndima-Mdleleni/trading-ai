@@ -54,9 +54,9 @@ def run_backtest(df: pd.DataFrame) -> pd.DataFrame:
 
         # TRAILING STOP — update and check
         elif position > 0 and entry_price > 0:
-            new_stop = price - (3 * atr)
+            new_stop = price - (cfg.atr_multiplier * atr)
             if new_stop > trailing_stop:
-                trailing_stop = new_stop
+                trailing_stop = price - (cfg.atr_multiplier * atr)
 
             if price < trailing_stop:
                 cash += position * proceeds

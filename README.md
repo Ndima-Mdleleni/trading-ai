@@ -55,14 +55,16 @@ Clean formatted report with honest verdict:
 | v4 | Dual signal: MACD + BB bounce | 14 | 1.06 | 7.87% | 100% | MODERATE |
 | v5 | + Fixed stop loss (5%) | 26 | 0.92 | 6.86% | 61.5% | WEAK |
 | v6 | + Trailing ATR stop (3x) | 22 | 1.00 | 8.01% | 54.5% | MODERATE |
+| v7 | + Parameter optimisation (BB 0.70, RSI 65) | 25 | 1.14 | 9.61% | 58.3% | MODERATE |
 
-**Key improvements from v1 to v6:**
-- Sharpe ratio improved from 0.63 to 1.00
-- Returns improved from 6.05% to 8.01%
+**Key improvements from v1 to v7:**
+- Sharpe ratio improved from 0.63 to 1.14
+- Returns improved from 6.05% to 9.61%
 - Max drawdown reduced from -3.45% to -2.31%
-- Profit factor improved from 3.32 to 5.01
-- Added intelligent trailing stop loss that locks in profits
-- Strategy consistently holds MODERATE verdict
+- Profit factor improved from 3.32 to 5.32
+- Added trailing ATR stop loss that locks in profits
+- Parameter optimisation found BB 0.70 + RSI 65 as optimal settings
+- Strategy consistently holds MODERATE verdict, approaching STRONG
 
 
 ## How to run

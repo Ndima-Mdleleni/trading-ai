@@ -23,6 +23,7 @@ class BacktestConfig:
     position_size: float = 0.1
     commission: float = 0.001
     slippage: float = 0.0005
+    atr_multiplier: float = 3.0
 
 @dataclass
 class Config:
