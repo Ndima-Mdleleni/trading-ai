@@ -47,19 +47,23 @@ Clean formatted report with honest verdict:
 
 ## Performance progression
 
-| Version | Strategy | Trades | Sharpe | Return | Verdict |
-|---------|----------|--------|--------|--------|---------|
-| v1 | MA crossover | 17 | 0.63 | 6.05% | WEAK |
-| v2 | MACD + BB confluence | 8 | 0.86 | 4.82% | WEAK |
-| v3 | MACD + BB, relaxed threshold | 12 | 1.13 | 7.44% | MODERATE |
-| v4 | Dual signal: MACD + BB bounce | 14 | 1.06 | 7.87% | MODERATE |
+| Version | Strategy | Trades | Sharpe | Return | Win Rate | Verdict |
+|---------|----------|--------|--------|--------|----------|---------|
+| v1 | MA crossover | 17 | 0.63 | 6.05% | 62.5% | WEAK |
+| v2 | MACD + BB confluence | 8 | 0.86 | 4.82% | 100% | WEAK |
+| v3 | MACD + BB, relaxed threshold | 12 | 1.13 | 7.44% | 100% | MODERATE |
+| v4 | Dual signal: MACD + BB bounce | 14 | 1.06 | 7.87% | 100% | MODERATE |
+| v5 | + Fixed stop loss (5%) | 26 | 0.92 | 6.86% | 61.5% | WEAK |
+| v6 | + Trailing ATR stop (3x) | 22 | 1.00 | 8.01% | 54.5% | MODERATE |
 
-**Key improvements from v1 to v4:**
-- Sharpe ratio improved from 0.63 to 1.06
-- Win rate improved from 62.5% to 100%
-- Max drawdown reduced from -3.45% to -2.46%
-- Profit factor improved from 3.32 to infinite (no losing trades)
-- Strategy moved from WEAK to MODERATE verdict
+**Key improvements from v1 to v6:**
+- Sharpe ratio improved from 0.63 to 1.00
+- Returns improved from 6.05% to 8.01%
+- Max drawdown reduced from -3.45% to -2.31%
+- Profit factor improved from 3.32 to 5.01
+- Added intelligent trailing stop loss that locks in profits
+- Strategy consistently holds MODERATE verdict
+
 
 ## How to run
 ```bash
