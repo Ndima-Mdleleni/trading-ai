@@ -3,28 +3,73 @@
 A full quantitative trading pipeline built in Python — from raw market data to automated 
 buy/sell signals, backtesting, and performance reporting.
 
-## What it does
-Fetches real market data, calculates technical indicators, generates trading signals, 
-simulates trades on historical data, and produces a clean performance report with 
-industry standard metrics.
+## How it works
 
-## Pipeline
-1. **Data** — fetches OHLCV data from Yahoo Finance via `yfinance`
-2. **Processing** — cleans data, adds returns and volatility
-3. **Indicators** — Moving Averages, RSI, MACD, Bollinger Bands
-4. **Signals** — generates buy/sell signals from indicator combinations
-5. **Backtest** — simulates trades with commission, slippage and position sizing
-6. **Metrics** — Sharpe ratio, max drawdown, win rate, profit factor
-7. **Report** — clean formatted performance report with verdict
+**Step 1 — Data Fetching**
+Pulls real historical OHLCV data (Open, High, Low, Close, Volume) from Yahoo Finance 
+using yfinance for any ticker and date range.
+
+**Step 2 — Processing**
+Cleans raw price data and adds daily returns, log returns, and rolling volatility — 
+turning raw prices into meaningful statistical information.
+
+**Step 3 — Indicators**
+Calculates four technical indicators on the processed data:
+- Moving Averages (20 and 50 day) — trend direction
+- RSI — momentum, overbought or oversold conditions
+- MACD — momentum turning bullish or bearish
+- Bollinger Bands — price position relative to its normal volatility range
+
+**Step 4 — Signal Generation**
+Two buy signals and one sell signal:
+- Buy 1: MACD crosses above signal line, price in lower 65% of BB range, RSI below 75
+- Buy 2: Price bounces off lower Bollinger Band with RSI below 40 (oversold bounce)
+- Sell: MACD crosses below signal line, price in upper 50% of BB range, RSI above 30
+
+**Step 5 — Backtesting**
+Simulates trades on historical data accounting for position sizing (10% per trade), 
+commission (0.1%) and slippage (0.05%). Tracks portfolio value daily.
+
+**Step 6 — Metrics**
+Reports industry standard quant performance metrics:
+- Total and annualised return
+- Sharpe ratio (risk adjusted returns)
+- Maximum drawdown
+- Win rate and profit factor
+
+**Step 7 — Report**
+Clean formatted report with honest verdict:
+- Sharpe above 1.5 → STRONG
+- Sharpe above 1.0 → MODERATE  
+- Sharpe below 1.0 → WEAK
+
+## Current performance
+
+## Performance progression
+
+| Version | Strategy | Trades | Sharpe | Return | Verdict |
+|---------|----------|--------|--------|--------|---------|
+| v1 | MA crossover | 17 | 0.63 | 6.05% | WEAK |
+| v2 | MACD + BB confluence | 8 | 0.86 | 4.82% | WEAK |
+| v3 | MACD + BB, relaxed threshold | 12 | 1.13 | 7.44% | MODERATE |
+| v4 | Dual signal: MACD + BB bounce | 14 | 1.06 | 7.87% | MODERATE |
+
+**Key improvements from v1 to v4:**
+- Sharpe ratio improved from 0.63 to 1.06
+- Win rate improved from 62.5% to 100%
+- Max drawdown reduced from -3.45% to -2.46%
+- Profit factor improved from 3.32 to infinite (no losing trades)
+- Strategy moved from WEAK to MODERATE verdict
 
 ## How to run
+```bash
 pip install yfinance pandas numpy ta
-
 python3 main.py
+```
 
 ## Configuration
-All parameters are in `config.py` — change ticker, dates, capital, 
-position size, commission and indicator periods from one place.
+All parameters in `config.py` — change ticker, dates, capital, position size, 
+commission and indicator periods from one place.
 
 ## What I learned
 Building this trading AI was my first real step into quantitative engineering — 
@@ -44,11 +89,11 @@ This is version one. The signals get better, the parameters get optimised,
 live broker integration comes next — and so does the real test.
 
 ## Next steps
-- Improve signal quality for higher Sharpe ratio
+- Add stop losses for better risk management
+- Optimise parameters using walk-forward validation
 - Add forex data (GBP/USD, USD pairs)
 - Live broker integration via OANDA API
 - Automatic execution and deployment
-- Paper trading validation before live capital
 
 ## Built with
 - Python
