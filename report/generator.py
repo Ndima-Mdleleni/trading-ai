@@ -25,6 +25,8 @@ def print_report(metrics: dict, trades: pd.DataFrame) -> None:
 
     print("\n📉 RISK")
     print(f"  Sharpe Ratio          : {metrics['sharpe_ratio']}")
+    print(f"   Sortino Ratio        : {metrics['sortino_ratio']}")
+    print(f"  Calmar Ratio          : {metrics['calmar_ratio']}")
     print(f"  Max Drawdown          : {metrics['max_drawdown']}")
 
     print("\n🎯 TRADE QUALITY")

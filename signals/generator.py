@@ -39,18 +39,23 @@ def generate_signals(df: pd.DataFrame) -> pd.DataFrame:
         (df["bb_position"].shift(1) <= 0.1)
     )
 
+    df["regime"] = "ranging"
+    df.loc[df["adx"] > 15, "regime"] = "trending"
+
     df["signal"] = 0
 
     df.loc[
         df["macd_cross_up"] &
         (df["bb_position"] <= 0.70) &
-        (df["rsi"] < 65),
+        (df["rsi"] < 65) &
+        (df["regime"] == "trending"),
         "signal"
     ] = 1
 
     df.loc[
         df["bb_bounce"] &
-        (df["rsi"] < 40),
+        (df["rsi"] < 40) &
+        (df["regime"] == "trending"),
         "signal"
     ] = 1
 
@@ -82,3 +87,9 @@ if __name__ == "__main__":
     signals = df[df["signal"] != 0][["Close", "signal", "rsi", "bb_position", "macd_signal"]]
     print(signals)
     print(f"\ntotal signals: {len(signals)}")
+    print(df["regime"]. value_counts())
+
+    buy_and_hold = (df["Close"].iloc[-1] - df["Close"].iloc[0]) / df["Close"].iloc[0]
+    print(f"\nbuy and hold return: {buy_and_hold:.2%}")
+    print(f"first price: {df['Close'].iloc[0]:.2f}")
+    print(f"last price:  {df['Close'].iloc[-1]:.2f}")

@@ -49,6 +49,8 @@ def add_indicators(df: pd.DataFrame) -> pd.DataFrame:
         df["High"], df["Low"], df["Close"], window=14
     )
 
+    df["adx"] = ta.trend.adx(df["High"], df["Low"], df["Close"], window=14)
+    
     # drop rows with NaN from indicator warmup period
     df.dropna(inplace=True)
 

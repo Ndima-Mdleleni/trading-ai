@@ -40,6 +40,13 @@ def calculate_metrics(df: pd.DataFrame, trades: pd.DataFrame) -> dict:
     # max drawdown
     max_drawdown = df["drawdown"].min()
 
+# sortino ratio - only penalises downside volatility
+    negative_returns = port_returns[port_returns < 0]
+    sortino = (port_returns.mean() / negative_returns.std()) * np.sqrt(252)
+
+    # calmar ratio - annual return divided by max drawdown
+    calmar = ann_return / abs(max_drawdown) if max_drawdown != 0 else np.inf
+
     # trade level metrics
     if len(trades) >= 2:
         buys  = trades[trades["action"] == "BUY"].reset_index(drop=True)
@@ -60,10 +67,12 @@ def calculate_metrics(df: pd.DataFrame, trades: pd.DataFrame) -> dict:
         "annual_return":   f"{ann_return:.2%}",
         "sharpe_ratio":    f"{sharpe:.2f}",
         "max_drawdown":    f"{max_drawdown:.2%}",
+        "sortino_ratio":   f"{sortino:.2f}",
+        "calmar_ratio":    f"{calmar:.2f}",
         "win_rate":        f"{win_rate:.2%}",
         "profit_factor":   f"{profit_factor:.2f}",
         "total_trades":    len(trades),
-        "final_value":     f"${final:,.2f}"
+        "final_value":     f"${final:,.2f}"        
     }
 
     return metrics

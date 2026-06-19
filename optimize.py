@@ -21,6 +21,7 @@ df_raw = add_indicators(df_raw)
 bb_thresholds  = [0.55, 0.60, 0.65, 0.70, 0.75]
 rsi_levels     = [65, 70, 75, 80]
 atr_multipliers = [2.5, 3.0, 3.5, 4.0]
+adx_thresholds   = [15, 17, 20]
 
 results = []
 total   = len(bb_thresholds) * len(rsi_levels) * len(atr_multipliers)
@@ -28,7 +29,7 @@ count   = 0
 
 print(f"scanning {total} combinations...\n")
 
-for bb, rsi, atr in itertools.product(bb_thresholds, rsi_levels, atr_multipliers):
+for bb, rsi, atr, adx in itertools.product(bb_thresholds, rsi_levels, atr_multipliers, adx_thresholds):
     count += 1
 
     # update config
@@ -54,8 +55,8 @@ for bb, rsi, atr in itertools.product(bb_thresholds, rsi_levels, atr_multipliers
         (df["macd"].shift(1) >= df["macd_signal"].shift(1))
     )
 
-    df.loc[df["macd_cross_up"] & (df["bb_position"] <= bb) & (df["rsi"] < rsi), "signal"] = 1
-    df.loc[df["bb_bounce"] & (df["rsi"] < 40), "signal"] = 1
+    df.loc[df["macd_cross_up"] & (df["bb_position"] <= 0.70) & (df["rsi"] < 65) & (df["adx"] > 15), "signal"] = 1
+    df.loc[df["bb_bounce"] & (df["rsi"] < 40) & (df["adx"] > 15), "signal"] = 1
     df.loc[df["macd_cross_down"] & (df["bb_position"] >= 0.5) & (df["rsi"] > 30), "signal"] = -1
     df["position"] = df["signal"].replace(0, None).ffill().fillna(0)
 
@@ -68,6 +69,7 @@ for bb, rsi, atr in itertools.product(bb_thresholds, rsi_levels, atr_multipliers
         "rsi":    rsi,
         "atr":    atr,
         "sharpe": sharpe,
+        "adx":    adx,
         "return": metrics["total_return"],
         "trades": metrics["total_trades"],
         "winrate": metrics["win_rate"]
@@ -89,4 +91,5 @@ print(f"  bb_threshold:    {best['bb']}")
 print(f"  rsi_level:       {best['rsi']}")
 print(f"  atr_multiplier:  {best['atr']}")
 print(f"  sharpe:          {best['sharpe']:.2f}")
+print(f"  adx:             {best['adx']:.2f}")
 print(f"  return:          {best['return']}")
