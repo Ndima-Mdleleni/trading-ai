@@ -83,13 +83,39 @@ portfolio value      →  -0.85% peak-to-trough during this window
 
 trades during window →  1 (BUY on 2020-03-19, days before the actual market bottom)
 
-**Honest interpretation:** the strategy was sitting in cash heading into the crash, so 
-there was no open position to lose value on. The single trade that did occur — a buy 
-on March 19, 2020 — landed within days of the literal bottom of the crash, driven by 
-the oversold RSI + Bollinger Band bounce logic identifying capitulation. This is partly 
-genuine signal quality and partly fortunate timing (being in cash when the crash began). 
-A version of this strategy already mid-trade when a crash begins would still be exposed 
-to the trailing stop loss like any other trade.
+
+## Train/test split — checking for overfitting
+
+The original v8 result (Sharpe 1.58, STRONG) was found by running an ~80-combination 
+parameter grid search across the full 2018-2022 dataset, then reporting performance on 
+that same dataset. This is a known methodological problem: with enough parameter 
+combinations tested, some will look strong by chance alone, regardless of whether the 
+underlying edge is real.
+
+To check this honestly, the dataset was split chronologically:
+
+
+**Results:**
+
+| Period | Sharpe | Return | Trades | Notes |
+|--------|--------|--------|--------|-------|
+| Train (optimized) | 0.51 | 1.73% | 12 | Best combination found on this window only |
+| Full range (original, biased) | 1.58 | 17.63% | 21 | Optimized and reported on the same data |
+| Test (out-of-sample, honest) | 1.15 | 2.80% | 3 | Parameters fixed from train, never re-tuned |
+
+**Honest interpretation:** the original 1.58 Sharpe was partly inflated by searching 80 
+parameter combinations on the data it was then reported against — a form of overfitting. 
+The genuinely out-of-sample result is Sharpe 1.15, still a real, respectable MODERATE 
+result, not noise. The strategy shows real (if more modest) edge on data it never saw 
+during optimization, but the corrected, defensible claim is "Sharpe in the 1.0-1.2 
+range, MODERATE" — not the original STRONG verdict. The test sample is also very small 
+(3 trades), which limits how much confidence to place in this single result; a longer 
+or rolling test window would give a more reliable estimate.
+
+This is the difference between a backtest result and a validated strategy. The first is 
+easy to produce. The second requires checking your own work this way before trusting it 
+with real capital.
+
 
 ## Performance progression
 

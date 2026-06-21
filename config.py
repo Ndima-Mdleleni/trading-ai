@@ -4,7 +4,7 @@ from typing import List
 @dataclass
 class DataConfig:
     ticker: str = "AAPL"
-    start_date: str = "2018-01-01"
+    start_date: str = "2020-01-01"
     end_date: str = "2022-01-01"
     interval: str = "1d"
 

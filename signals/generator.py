@@ -46,7 +46,7 @@ def generate_signals(df: pd.DataFrame) -> pd.DataFrame:
 
     df.loc[
         df["macd_cross_up"] &
-        (df["bb_position"] <= 0.70) &
+        (df["bb_position"] <= 0.55) &
         (df["rsi"] < 65) &
         (df["regime"] == "trending"),
         "signal"
