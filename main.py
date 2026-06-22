@@ -10,6 +10,8 @@ from signals.generator import generate_signals
 from backtest.engine import run_backtest
 from backtest.metrics import calculate_metrics
 from report.generator import print_report
+from config import config
+from database import save_results
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,6 +44,10 @@ def run_pipeline():
 
     # 7. print report
     print_report(metrics, trades)
+
+    #8. save to database
+    save_results(metrics, trades, config.data.ticker, config.data.start_date, config.data.end_date)
+
 
     logger.info("pipeline complete")
     return df, trades, metrics
