@@ -131,6 +131,17 @@ def query_trades_with_metrics():
     conn.close()
     return df
 
+def query_summary():
+    conn = get_connection()
+    df = pd.read_sql_query("""
+        SELECT
+            COUNT(*) as total_runs,
+            AVG(CAST(total_trades AS FLOAT)) as avg_trades_per_run
+        FROM backtest_runs
+    """, conn)
+    conn.close()
+    return df
+
 if __name__ == "__main__":
     create_tables()
     print("database ready")
@@ -146,3 +157,7 @@ if __name__ == "__main__":
     joined = query_trades_with_metrics()
     print("\n--- joined trades + metrics ---")
     print(joined)
+
+    summary = query_summary()
+    print("\n--- summary stats ---")
+    print(summary)
